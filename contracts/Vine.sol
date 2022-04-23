@@ -4,6 +4,11 @@ import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openseppellin//contracts/utils/Arrays.sol'
 
+// To ensure digital scarcity of the token, the minting is
+// tied to the purchase of goods and services.
+// A customer needs to pay for goods throught the paymentProcessor
+// contract and need to have been sent the product by the supplier in order to have minted tokens.
+
 contract Vine is ERC20 {
 
   struct customer {
