@@ -5,7 +5,11 @@ import './Vine.sol';
 
 contract PaymentProcessor {
   address public admin;
-  IERC20 public dai;
+  address public charityTreasury
+  address public researchTreasury
+  address public createivesTreasury
+  address public operationsTreasury
+
   ERC20 public vine;
 
   event PaymentDone(
@@ -15,17 +19,36 @@ contract PaymentProcessor {
     uint date
   )
 
-  constructor(address adminAddress, address daiAddress) public {
-    admin = adminAddress;
-    dai = IERC20(daiaddress);
+  struct paySplits {
+    uint charity
+    uint research
+    uint creatives
+    uint operations
   }
 
-  function pay(uint amount, uint paymentId) external {
-    dai.transferFrom(msg.sender, admin, amount);
-    vine.customerPaid(msg.sender, amount);
-    emit PaymentDone(msg.sender, amount, paymentId, block.timestamp)
-    //Todo: aupdate vine token `customers` mapping with
+  constructor(address adminAddress, address daiAddress,
+                                    address charityAddress,
+                                    address rnDAddress,
+                                    address createivesAddress,
+                                    address operationsAddress) public {
+    charityTreasury    = charityAddress
+    researchTreasury   = researchAddress
+    createivesTreasury = createivesAddress
+    operationsTreasury = operationsAddress
+    admin              = adminAddress;
   }
 
-  //
+  // Pass in % of funds that should got to each treasury. (e.g. 20 for 20%). All percents should add up to 100.
+  // Fixed point numbers arent fully supported, hence the funky math.
+  function pay(uint charityAmount, uint researchAmount, uint creativeAmount, uint operationsAmount, uint paymentId) external {
+    require((charityAmount + researchAmount + creativeAmount + operationsAmount) == 100)
+
+    charityTreasury.transfer((msg.value*charityAmount)/100);
+    researchTreasury.transfer((msg.value*researchAmount)/100);
+    creativeTreasury.transfer((msg.value*creativeAmount)/100);
+    operationsTreasury.transfer((msg.value*operationsAmount)/100);
+
+    vine.customerPaid(msg.sender, msg.value);
+    emit PaymentDone(msg.sender, msg.value, paymentId, block.timestamp)
+  }
 }
