@@ -1,8 +1,7 @@
-pragma solidity ^0.8.12
+pragma solidity ^0.8.12;
 
 import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openseppellin//contracts/utils/Arrays.sol'
 
 // To ensure digital scarcity of the token, the minting is
 // tied to the purchase of goods and services.
@@ -12,21 +11,24 @@ import '@openseppellin//contracts/utils/Arrays.sol'
 contract Vine is ERC20 {
 
   struct customer {
-    bool paid,
-    bool packageSent,
+    bool paid;
+    bool packageSent;
     uint amountBought;
   }
 
-  new mapping (address => customer) public customers
+  mapping (address => customer) public customers;
   address paymentProcessor;
-  address shippersAddress;
+  address supplier;
 
 
-  constructor(address paymentProcessor, address shipper) ERC20('Vine Governence Token', 'VINE') {}
-     paymentProcessor = paymentProcessor;
-     shippersAddress = shipper
+  constructor(address _paymentProcessor, address _supplier) ERC20('Vine Governence Token', 'VINE') {
+     supplier = _supplier;
   }
 
+  function updatePaymentProcessorAddress(address _paymentProcessor) {
+    require(msg.sender == supplier, "only admin can use this function");
+    paymentProcessor = _paymentProcessor;
+  }
 
   function customerPaid(address _customer, uint _amountBought) public {
     require(
@@ -35,23 +37,23 @@ contract Vine is ERC20 {
     );
 
     customers[_customer].paid = true;
-    customers[_customer].amountBought = _amountBought
+    customers[_customer].amountBought = _amountBought;
   }
 
   function packageSent(address _customer) public {
-    requre(
+    require(
       msg.sender == supplier && customers[_customer].paid,
       "Only the supplier can update this value"
-    )
+    );
 
-    customers[_customer].packageSent = true
+    customers[_customer].packageSent = true;
   }
 
   function mintToBuyer(address _customer) public {
     require(
-        (customers[_minter].paid && customers[_minter].packageSent),
+        (customers[_customer].paid && customers[_customer].packageSent),
         "Wallet needs to have bought and recieved package to mint tokens."
-      )
+      );
     uint tokensReceived = customers[_customer].amountBought * 100;
     _mint(_customer, tokensReceived);
 
